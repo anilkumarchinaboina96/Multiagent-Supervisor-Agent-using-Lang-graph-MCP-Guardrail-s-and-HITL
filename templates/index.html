@@ -1,0 +1,2572 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Travel Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <style>
+    :root {
+      --bg: #f7f9fc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --primary: #0ea5e9;
+      --primary-strong: #0284c7;
+      --accent: #8b5cf6;
+      --border: #dbe4f0;
+      --success: #10b981;
+      --danger: #ef4444;
+      --shadow: 0 18px 40px rgba(2, 6, 23, 0.1);
+      --radius: 18px;
+      --nav-height: 74px;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #050a1a;
+      --surface: #0f172a;
+      --text: #f8fafc;
+      --muted: #a7bddb;
+      --primary: #38bdf8;
+      --primary-strong: #0ea5e9;
+      --accent: #a78bfa;
+      --border: #243049;
+      --success: #34d399;
+      --danger: #fb7185;
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      background: radial-gradient(circle at 10% -20%, rgba(14,165,233,0.2), transparent 45%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(1200px, 92%);
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      backdrop-filter: blur(10px);
+      background: color-mix(in srgb, var(--surface) 88%, transparent);
+      border-bottom: 1px solid var(--border);
+      height: var(--nav-height);
+    }
+
+    .nav-inner {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 800;
+      font-size: 1.05rem;
+    }
+
+    .logo i {
+      color: var(--primary);
+      font-size: 1.25rem;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-link {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--muted);
+      padding: 0.35rem 0.5rem;
+      border-radius: 10px;
+      transition: 0.2s ease;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--text);
+      background: color-mix(in srgb, var(--primary) 18%, transparent);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .icon-btn,
+    .profile-btn,
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+    }
+
+    .profile-btn {
+      padding: 0.65rem 0.9rem;
+      font-weight: 600;
+    }
+
+    .btn {
+      padding: 0.78rem 1.1rem;
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      border: none;
+      box-shadow: var(--shadow);
+    }
+
+    .btn:hover,
+    .icon-btn:hover,
+    .profile-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+    }
+
+    .hero {
+      margin-top: 1.2rem;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      min-height: clamp(420px, 60vh, 560px);
+      display: flex;
+      align-items: flex-end;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(180deg, rgba(2,6,23,0.15), rgba(2,6,23,0.75)), url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80");
+      background-size: cover;
+      background-position: center;
+      transform: scale(1.02);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      color: #fff;
+      padding: clamp(1.2rem, 3vw, 2rem);
+      width: 100%;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      line-height: 1.1;
+      max-width: 720px;
+    }
+
+    .hero p {
+      margin: 0.9rem 0 1.4rem;
+      max-width: 760px;
+      color: #e6f1ff;
+    }
+
+    .search-panel {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.7rem;
+      background: color-mix(in srgb, #fff 92%, transparent);
+      padding: 0.9rem;
+      border-radius: 16px;
+      color: #0f172a;
+    }
+
+    .hero-cta-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      background: color-mix(in srgb, #fff 92%, transparent);
+      padding: 1rem;
+      border-radius: 16px;
+      color: #0f172a;
+    }
+
+    .hero-cta-copy {
+      margin: 0;
+      color: #334155;
+      font-size: 0.95rem;
+      max-width: 760px;
+    }
+
+    .route-selector {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: end;
+      gap: 0.55rem;
+    }
+
+    .route-field {
+      position: relative;
+    }
+
+    .route-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .route-icon {
+      position: absolute;
+      left: 0.68rem;
+      color: #64748b;
+      font-size: 0.92rem;
+      pointer-events: none;
+    }
+
+    .route-input-wrap input {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+
+    .route-clear {
+      position: absolute;
+      right: 0.42rem;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .route-clear:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .route-picked {
+      display: none;
+      margin-top: 0.38rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: #0f766e;
+      background: #ecfeff;
+      border: 1px solid #99f6e4;
+      border-radius: 999px;
+      padding: 0.24rem 0.5rem;
+      width: fit-content;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .route-suggestions {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      box-shadow: 0 12px 26px rgba(2, 6, 23, 0.13);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 7;
+      display: none;
+    }
+
+    .route-suggestion {
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: #fff;
+      padding: 0.58rem 0.7rem;
+      cursor: pointer;
+      display: grid;
+      gap: 0.1rem;
+    }
+
+    .route-suggestion:hover,
+    .route-suggestion.is-active {
+      background: #eff6ff;
+    }
+
+    .route-suggestion strong {
+      font-size: 0.88rem;
+      color: #0f172a;
+    }
+
+    .route-suggestion span {
+      font-size: 0.76rem;
+      color: #64748b;
+    }
+
+    .route-suggestion-empty {
+      padding: 0.68rem 0.72rem;
+      font-size: 0.82rem;
+      color: #64748b;
+    }
+
+    .swap-btn {
+      width: 42px;
+      height: 42px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #0f172a;
+      border-radius: 999px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      margin-bottom: 2px;
+      transition: transform 0.3s ease;
+    }
+
+    .swap-btn.is-rotating {
+      transform: rotate(180deg);
+    }
+
+    .route-hint {
+      grid-column: 1 / -1;
+      margin: 0;
+      font-size: 0.78rem;
+      color: #475569;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .field label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #334155;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      border: 1px solid #cbd5e1;
+      border-radius: 11px;
+      padding: 0.68rem 0.75rem;
+      font-family: inherit;
+      width: 100%;
+      background: #fff;
+      color: #0f172a;
+    }
+
+    section {
+      padding: 3.2rem 0 0;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.5vw, 2rem);
+    }
+
+    .section-desc {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+      max-width: 720px;
+    }
+
+    .section-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filters {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-control {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 0.6rem 0.7rem;
+      color: var(--text);
+      min-width: 180px;
+    }
+
+    .dest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .dest-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      transition: transform 0.25s ease;
+    }
+
+    .dest-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .dest-image-wrap {
+      position: relative;
+      height: 220px;
+      overflow: hidden;
+    }
+
+    .dest-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.35s ease;
+    }
+
+    .dest-card:hover .dest-image-wrap img {
+      transform: scale(1.05);
+    }
+
+    .favorite-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(15,23,42,0.5);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .favorite-btn.active {
+      background: rgba(239,68,68,0.95);
+    }
+
+    .dest-content {
+      padding: 0.95rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      flex: 1;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .tag {
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding: 0.22rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .card-actions {
+      margin-top: auto;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .planner-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem;
+    }
+
+    .planner-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.7rem;
+    }
+
+    .planner-form .full {
+      grid-column: 1 / -1;
+    }
+
+    .planner-form .field label {
+      color: var(--muted);
+    }
+
+    .workflow-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.7rem;
+    }
+
+    .workflow-chip {
+      font-size: 0.75rem;
+      background: color-mix(in srgb, var(--primary) 14%, transparent);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 0.34rem 0.58rem;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .timeline-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--surface) 92%, var(--primary) 8%);
+      overflow: hidden;
+    }
+
+    .timeline-summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 0.8rem 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+    }
+
+    .timeline-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .timeline-body {
+      padding: 0 0.95rem 0.9rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .timeline-body p {
+      margin: 0.35rem 0 0.8rem;
+    }
+
+    .timeline-body h3,
+    .timeline-body h4 {
+      color: var(--text);
+      margin: 0.8rem 0 0.4rem;
+    }
+
+    .timeline-body ul,
+    .timeline-body ol {
+      margin: 0.35rem 0 0.8rem;
+      padding-left: 1.4rem;
+    }
+
+    .itinerary-table-wrap {
+      margin: 0.65rem 0 0.9rem;
+      overflow-x: auto;
+    }
+
+    .itinerary-table {
+      width: 100%;
+      min-width: 520px;
+      border-collapse: collapse;
+      color: var(--text);
+      background: var(--surface);
+    }
+
+    .itinerary-table th,
+    .itinerary-table td {
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.7rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .itinerary-table th {
+      background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+      font-weight: 700;
+    }
+
+    .itinerary-table code {
+      overflow-wrap: anywhere;
+    }
+
+    .approval-area {
+      margin-top: 0.9rem;
+      display: none;
+      gap: 0.6rem;
+      flex-direction: column;
+    }
+
+    .approval-actions {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .gallery-grid {
+      columns: 4 220px;
+      column-gap: 0.8rem;
+    }
+
+    .gallery-item {
+      break-inside: avoid;
+      position: relative;
+      margin-bottom: 0.8rem;
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      transition: transform 0.35s ease;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.03);
+    }
+
+    .gallery-caption {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 0.6rem 0.75rem;
+      color: #fff;
+      background: linear-gradient(180deg, transparent, rgba(2,6,23,0.82));
+      font-size: 0.82rem;
+    }
+
+    .calculator-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.8rem;
+    }
+
+    .budget-output {
+      display: grid;
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.65rem 0.75rem;
+      background: color-mix(in srgb, var(--surface) 88%, var(--primary) 12%);
+    }
+
+    .chart {
+      margin-top: 0.6rem;
+      display: grid;
+      gap: 0.44rem;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 108px 1fr 70px;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .bar-track {
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--muted) 30%, transparent);
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .skeleton {
+      display: none;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.8rem;
+      margin-top: 0.75rem;
+    }
+
+    .skeleton-line {
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(148,163,184,0.15), rgba(148,163,184,0.35), rgba(148,163,184,0.15));
+      background-size: 220% 100%;
+      animation: shimmer 1.2s linear infinite;
+      margin-bottom: 0.5rem;
+    }
+
+    @keyframes shimmer {
+      from { background-position: 120% 0; }
+      to { background-position: -120% 0; }
+    }
+
+    .chat-fab {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 80;
+      border: none;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      box-shadow: var(--shadow);
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    .chat-panel {
+      position: fixed;
+      right: 18px;
+      bottom: 86px;
+      width: min(360px, calc(100vw - 24px));
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      z-index: 80;
+      display: none;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chat-messages {
+      max-height: 360px;
+      overflow-y: auto;
+      padding: 0.8rem;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .chat-msg {
+      padding: 0.55rem 0.65rem;
+      border-radius: 11px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .chat-msg.user {
+      background: color-mix(in srgb, var(--primary) 18%, transparent);
+      justify-self: end;
+      max-width: 85%;
+    }
+
+    .chat-msg.ai {
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
+      max-width: 88%;
+    }
+
+    .chat-suggestions {
+      display: flex;
+      gap: 0.45rem;
+      overflow-x: auto;
+      padding: 0 0.8rem 0.7rem;
+    }
+
+    .chat-suggestion {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.74rem;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 0.45rem;
+      border-top: 1px solid var(--border);
+      padding: 0.8rem;
+    }
+
+    .chat-input input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.58rem 0.62rem;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .typing {
+      display: none;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 0 0.8rem 0.6rem;
+    }
+
+    .toast-wrap {
+      position: fixed;
+      top: 84px;
+      right: 16px;
+      z-index: 100;
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .toast {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-left: 4px solid var(--primary);
+      padding: 0.6rem 0.7rem;
+      border-radius: 10px;
+      min-width: 220px;
+      box-shadow: var(--shadow);
+      font-size: 0.9rem;
+    }
+
+    .toast.error {
+      border-left-color: var(--danger);
+    }
+
+    .hidden { display: none !important; }
+
+    .btn[disabled] {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .back-to-top {
+      position: fixed;
+      left: 16px;
+      bottom: 18px;
+      z-index: 70;
+      border: none;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      display: none;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: var(--shadow);
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(2,6,23,0.92);
+      display: none;
+      z-index: 120;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .lightbox img {
+      max-width: min(1200px, 94vw);
+      max-height: 82vh;
+      border-radius: 12px;
+    }
+
+    .lightbox button {
+      position: absolute;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .lb-prev { left: 16px; }
+    .lb-next { right: 16px; }
+    .lb-close { top: 16px; right: 16px; }
+
+    footer {
+      margin-top: 3.2rem;
+      padding: 2rem 0;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .footer-grid h4 {
+      margin: 0 0 0.5rem;
+      color: var(--text);
+    }
+
+    .footer-links {
+      display: grid;
+      gap: 0.35rem;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 1040px) {
+      .dest-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .search-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .planner-layout { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .mobile-menu-btn { display: grid; }
+      .nav-links {
+        position: absolute;
+        top: var(--nav-height);
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0.8rem 1rem;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .nav-links.open { display: flex; }
+      .profile-btn { display: none; }
+      .dest-grid { grid-template-columns: 1fr; }
+      .planner-form { grid-template-columns: 1fr; }
+      .calculator-grid { grid-template-columns: 1fr; }
+      .search-panel { grid-template-columns: 1fr; }
+      .route-selector {
+        grid-template-columns: 1fr;
+      }
+      .swap-btn {
+        margin: 0;
+        justify-self: center;
+      }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="logo" href="#home"><i class="fa-solid fa-earth-asia"></i>AI Travel Planner</a>
+      <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+      <ul class="nav-links" id="navLinks">
+        <li><a class="nav-link active" href="#home">Home</a></li>
+        <li><a class="nav-link" href="#destinations">Explore Destinations</a></li>
+        <li><a class="nav-link" href="#itinerary">My Trips</a></li>
+        <li><a class="nav-link" href="#planner">AI Trip Planner</a></li>
+        <li><a class="nav-link" href="#about">About</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"><i class="fa-regular fa-moon"></i></button>
+        <button class="profile-btn" id="profileBtn"><i class="fa-regular fa-user"></i> Profile / Login</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container" id="home">
+    <section class="hero" aria-label="Hero section">
+      <div class="hero-content">
+        <h1>Discover the World. Plan Smarter. Travel Better.</h1>
+        <p>Your personal AI travel assistant for discovering destinations and creating unforgettable journeys.</p>
+        <div class="hero-cta-panel" id="heroSearchPanel">
+          <p class="hero-cta-copy">Fill all travel details in one form only. Click below to jump directly to the AI Trip Planner section.</p>
+          <button class="btn btn-primary" id="heroPlanBtn">Plan My Trip with AI</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="destinations">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Popular Tourist Destinations</h2>
+          <p class="section-desc">Explore curated destinations, estimate budgets, and send one-click destination plans to the AI planner.</p>
+        </div>
+        <div class="filters">
+          <input id="destinationSearch" class="filter-control" type="search" placeholder="Search destination...">
+          <select id="destinationFilter" class="filter-control">
+            <option value="all">All</option>
+            <option value="india">India</option>
+            <option value="international">International</option>
+            <option value="beach">Beaches & Islands</option>
+            <option value="mountain">Mountains & Nature</option>
+            <option value="heritage">Heritage</option>
+          </select>
+        </div>
+      </div>
+      <div class="dest-grid" id="destinationGrid"></div>
+    </section>
+
+    <section id="planner">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">AI Trip Planner</h2>
+          <p class="section-desc">Fill the full travel requirements and generate a draft itinerary through the existing backend workflow.</p>
+        </div>
+      </div>
+      <div class="planner-layout">
+        <div class="panel">
+          <form id="plannerForm" class="planner-form" novalidate>
+            <div class="field"><label for="fromCity">Starting location</label><input id="fromCity" required type="text" placeholder="Bengaluru"></div>
+            <div class="field"><label for="toCity">Destination</label><input id="toCity" required type="text" placeholder="Goa"></div>
+            <div class="field"><label for="startDate">Travel start date</label><input id="startDate" required type="date"></div>
+            <div class="field"><label for="endDate">Travel end date</label><input id="endDate" required type="date"></div>
+            <div class="field"><label for="days">Number of days</label><input id="days" type="number" min="1" max="30" value="5"></div>
+            <div class="field"><label for="travelers">Number of travelers</label><input id="travelers" type="number" min="1" max="20" value="2"></div>
+            <div class="field"><label for="budgetRange">Budget range</label><input id="budgetRange" required type="text" placeholder="INR 80,000"></div>
+            <div class="field"><label for="travelStyle">Travel style</label>
+              <select id="travelStyle">
+                <option>Adventure</option>
+                <option>Luxury</option>
+                <option selected>Budget</option>
+                <option>Family</option>
+                <option>Romantic</option>
+                <option>Cultural</option>
+                <option>Nature</option>
+              </select>
+            </div>
+            <div class="field"><label for="accommodation">Accommodation preference</label>
+              <select id="accommodation">
+                <option>Budget Hotel</option>
+                <option>Boutique Hotel</option>
+                <option selected>Mid-range Hotel</option>
+                <option>Luxury Resort</option>
+                <option>Hostel</option>
+              </select>
+            </div>
+            <div class="field"><label for="transport">Transportation preference</label>
+              <select id="transport">
+                <option>Flight + Local Taxi</option>
+                <option selected>Train + Local Transport</option>
+                <option>Self Drive</option>
+                <option>Flight + Metro</option>
+              </select>
+            </div>
+            <div class="field full"><label for="interests">Interests</label><textarea id="interests" rows="3" placeholder="Food tours, cultural spots, easy-paced sightseeing"></textarea></div>
+            <div class="field full">
+              <button id="plannerSubmit" type="submit" class="btn btn-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate Itinerary</button>
+            </div>
+          </form>
+          <div class="skeleton" id="plannerSkeleton" aria-live="polite">
+            <div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div>
+            <div class="skeleton-line" style="width:75%"></div>
+          </div>
+          <div class="approval-area" id="approvalArea">
+            <div class="field"><label for="approvalFeedback">Revision feedback</label><textarea id="approvalFeedback" rows="2" placeholder="Example: reduce hotel cost and add one relaxed day."></textarea></div>
+            <div class="approval-actions">
+              <button class="btn btn-primary" id="approveBtn" type="button">Approve & Finalize</button>
+              <button class="btn" id="reviseBtn" type="button">Revise with Feedback</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3 style="margin-top:0">Planner Status</h3>
+          <p id="plannerStatus" style="color:var(--muted);margin:0">No active request. Fill the form and generate a trip plan.</p>
+          <div class="workflow-list" id="workflowList"></div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;">
+          <p style="margin:0 0 0.45rem;"><strong>API health:</strong> <span id="healthStatus">Checking...</span></p>
+          <p style="margin:0;color:var(--muted);font-size:0.9rem">Integrated endpoints: <code>POST /api/travel/stream</code>, <code>POST /api/travel/approve/stream</code>, <code>GET /health</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="itinerary">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Generated Travel Itinerary</h2>
+          <p class="section-desc">Timeline-style itinerary with expandable day cards, recommendations, and practical travel advice.</p>
+        </div>
+        <div class="section-actions">
+          <button class="btn" id="downloadPdfBtn" type="button" disabled>
+            <i class="fa-solid fa-file-pdf"></i> Download PDF
+          </button>
+        </div>
+      </div>
+      <div class="panel">
+        <p id="itineraryMeta" style="margin-top:0;color:var(--muted)">No itinerary generated yet.</p>
+        <div class="timeline" id="itineraryTimeline"></div>
+      </div>
+    </section>
+
+    <section id="gallery">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Destination Gallery</h2>
+          <p class="section-desc">Masonry gallery with lightbox preview and keyboard navigation.</p>
+        </div>
+      </div>
+      <div class="gallery-grid" id="galleryGrid"></div>
+    </section>
+
+    <section id="budget">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Travel Budget Calculator</h2>
+          <p class="section-desc">Enter costs manually or load itemized estimates from a generated travel plan.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="calculator-grid" id="calculatorGrid"></div>
+        <div class="field" style="max-width:260px;margin-top:0.8rem;"><label for="budgetTravelers">Travelers</label><input id="budgetTravelers" type="number" min="1" value="2"></div>
+        <div class="budget-output">
+          <div class="metric"><span>Total Budget</span><strong id="budgetTotal">INR 0</strong></div>
+          <div class="metric"><span>Per Person</span><strong id="budgetPerPerson">INR 0</strong></div>
+        </div>
+        <div class="chart" id="budgetChart"></div>
+        <p id="budgetPlanStatus" role="status" aria-live="polite" style="margin:0.8rem 0 0;color:var(--muted);font-size:0.9rem;">Generate a travel plan above to load its estimated costs. You can edit every amount here.</p>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="panel">
+        <h2 class="section-title" style="margin-top:0">About AI Travel Planner</h2>
+        <p class="section-desc">This app runs on a FastAPI backend with a LangGraph multi-agent workflow (supervisor, guardrails, and human approval). Draft plans are generated using the live backend, then finalized after approval or revision feedback.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div>
+        <h4>AI Travel Planner</h4>
+        <div class="footer-links">
+          <span>Plan flights, stays, weather, and budgets in one flow.</span>
+        </div>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <div class="footer-links"><a href="#destinations">Destinations</a><a href="#gallery">Gallery</a><a href="#budget">Budget Tools</a></div>
+      </div>
+      <div>
+        <h4>Planner</h4>
+        <div class="footer-links"><a href="#planner">AI Trip Planner</a><a href="#itinerary">My Trips</a></div>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <div class="footer-links"><span>FastAPI + LangGraph + MCP</span><span>Health endpoint enabled</span></div>
+      </div>
+    </div>
+  </footer>
+
+  <button class="chat-fab" id="chatFab" aria-label="Open travel assistant"><i class="fa-solid fa-comments"></i></button>
+  <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
+
+  <div class="chat-panel" id="chatPanel" role="dialog" aria-label="Travel assistant chat">
+    <div class="chat-header">
+      <strong><i class="fa-solid fa-robot"></i> Travel Assistant</strong>
+      <div>
+        <button class="icon-btn" id="clearChatBtn" aria-label="Clear chat"><i class="fa-solid fa-trash"></i></button>
+        <button class="icon-btn" id="closeChatBtn" aria-label="Close chat"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="typing" id="typingIndicator">AI assistant is typing...</div>
+    <div class="chat-suggestions" id="chatSuggestions"></div>
+    <div class="chat-input">
+      <input id="chatInput" type="text" placeholder="Ask travel questions...">
+      <button class="btn btn-primary" id="chatSendBtn" type="button"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" aria-modal="true" role="dialog">
+    <button class="lb-close" id="lbClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    <button class="lb-prev" id="lbPrev" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+    <img id="lightboxImage" src="" alt="Gallery preview">
+    <button class="lb-next" id="lbNext" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const API_BASE_URL = window.location.origin;
+    const REQUEST_TIMEOUT_MS = 120000;
+    const LOCATION_AUTOCOMPLETE_URL = "https://nominatim.openstreetmap.org/search";
+    const LOCATION_AUTOCOMPLETE_LIMIT = 6;
+    const IMAGE_FALLBACK = "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80";
+
+    const destinations = [
+      { id: "bali", name: "Bali", country: "Indonesia", category: ["international", "beach"], budget: "INR 1.2L - 1.8L", bestTime: "Apr - Oct", desc: "Beach clubs, waterfalls, and temples.", image: "https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?auto=format&fit=crop&w=900&q=80" },
+      { id: "paris", name: "Paris", country: "France", category: ["international", "heritage"], budget: "INR 1.8L - 2.8L", bestTime: "Apr - Jun", desc: "Art, cafes, and iconic landmarks.", image: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=900&q=80" },
+      { id: "switzerland", name: "Switzerland", country: "Europe", category: ["international", "mountain"], budget: "INR 2.2L - 3.4L", bestTime: "Jun - Sep", desc: "Snow peaks, trains, and alpine towns.", image: "https://images.unsplash.com/photo-1527668752968-14dc70a27c95?auto=format&fit=crop&w=900&q=80" },
+      { id: "dubai", name: "Dubai", country: "UAE", category: ["international", "luxury"], budget: "INR 1.1L - 2.1L", bestTime: "Nov - Mar", desc: "Desert safaris, malls, and skyline views.", image: "https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=900&q=80" },
+      { id: "manali", name: "Manali", country: "India", category: ["india", "mountain"], budget: "INR 45K - 85K", bestTime: "Mar - Jun", desc: "Himalayan valleys and adventure sports.", image: "https://images.unsplash.com/photo-1626011774237-f078fda4f4da?auto=format&fit=crop&w=900&q=80" },
+      { id: "goa", name: "Goa", country: "India", category: ["india", "beach"], budget: "INR 40K - 90K", bestTime: "Nov - Feb", desc: "Beaches, nightlife, and seafood trails.", image: "https://images.unsplash.com/photo-1587922546307-776227941871?auto=format&fit=crop&w=900&q=80" },
+      { id: "kashmir", name: "Kashmir", country: "India", category: ["india", "mountain", "nature"], budget: "INR 60K - 1.2L", bestTime: "Apr - Oct", desc: "Lakes, valleys, and mountain landscapes.", image: "https://images.unsplash.com/photo-1627894483216-2138af692e32?auto=format&fit=crop&w=900&q=80" },
+      { id: "kyoto", name: "Kyoto", country: "Japan", category: ["international", "heritage"], budget: "INR 1.6L - 2.5L", bestTime: "Mar - May", desc: "Shrines, geisha districts, and gardens.", image: "https://images.unsplash.com/photo-1492571350019-22de08371fd3?auto=format&fit=crop&w=900&q=80" },
+      { id: "maldives", name: "Maldives", country: "Indian Ocean", category: ["international", "beach", "luxury"], budget: "INR 1.5L - 3.0L", bestTime: "Nov - Apr", desc: "Overwater villas and turquoise lagoons.", image: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=900&q=80" },
+      { id: "rome", name: "Rome", country: "Italy", category: ["international", "heritage"], budget: "INR 1.7L - 2.6L", bestTime: "Apr - Jun", desc: "Ancient monuments and Italian cuisine.", image: "https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&fit=crop&w=900&q=80" }
+    ];
+
+    const galleryItems = [
+      { caption: "Alpine adventures in Switzerland", src: "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=1400&q=80" },
+      { caption: "Tropical beaches in Bali", src: "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?auto=format&fit=crop&w=1400&q=80" },
+      { caption: "Kashmir valley landscapes", src: "https://images.unsplash.com/photo-1532274402917-5aadf880af6f?auto=format&fit=crop&w=1400&q=80" },
+      { caption: "Paris city charm", src: "https://images.unsplash.com/photo-1431274172761-fca41d930114?auto=format&fit=crop&w=1400&q=80" },
+      { caption: "Goa coastline", src: "https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=1400&q=80" },
+      { caption: "Ancient Rome monuments", src: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1400&q=80" },
+      { caption: "Kyoto cultural streets", src: "https://images.unsplash.com/photo-1493997181344-712f2f19d87a?auto=format&fit=crop&w=1400&q=80" },
+      { caption: "Maldives luxury resorts", src: "https://images.unsplash.com/photo-1578922746465-3a80a228f223?auto=format&fit=crop&w=1400&q=80" }
+    ];
+
+    const chatPrompts = [
+      "Suggest a 5-day trip to Bali.",
+      "Best places to visit in Kashmir.",
+      "Plan a budget trip from Bengaluru to Goa.",
+      "What is the best time to visit Switzerland?"
+    ];
+
+    const budgetCategories = ["Flights", "Hotels", "Food", "Transportation", "Activities", "Shopping", "Miscellaneous"];
+
+    let state = {
+      currentThreadId: localStorage.getItem("planner_thread_id") || null,
+      chatThreadId: localStorage.getItem("chat_thread_id") || null,
+      pendingApproval: false,
+      lightboxIndex: 0,
+      favorites: new Set(JSON.parse(localStorage.getItem("favorite_destinations") || "[]")),
+      latestItineraryText: "",
+      latestItineraryThreadId: null,
+      latestItineraryIsDraft: false,
+      heroRoute: {
+        from: null,
+        to: null
+      }
+    };
+
+    const heroAutocompleteState = {
+      from: {
+        timer: null,
+        controller: null,
+        activeIndex: -1,
+        suggestions: []
+      },
+      to: {
+        timer: null,
+        controller: null,
+        activeIndex: -1,
+        suggestions: []
+      }
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function showToast(message, isError = false) {
+      const toast = document.createElement("div");
+      toast.className = `toast${isError ? " error" : ""}`;
+      toast.textContent = message;
+      $("toastWrap").appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    function safeText(value) {
+      return String(value || "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+    }
+
+    async function fetchWithTimeout(url, options = {}, timeout = REQUEST_TIMEOUT_MS) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort("timeout"), timeout);
+      try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        return response;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    }
+
+    async function postStreamingRequest(url, body, onToken) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(
+        () => controller.abort("timeout"),
+        REQUEST_TIMEOUT_MS
+      );
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Travel API failed (${response.status})`);
+        }
+
+        if (!response.headers.get("content-type")?.includes("text/event-stream")) {
+          const data = await response.json().catch(() => ({}));
+          if (!data.success) {
+            throw new Error(data.error || "Travel API returned an invalid response.");
+          }
+          return data;
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let result = null;
+
+        const processFrame = (frame) => {
+          let eventName = "message";
+          const dataLines = [];
+          frame.split("\n").forEach((line) => {
+            if (line.startsWith("event:")) {
+              eventName = line.slice(6).trim();
+            } else if (line.startsWith("data:")) {
+              dataLines.push(line.slice(5).trimStart());
+            }
+          });
+          if (!dataLines.length) return;
+
+          const payload = JSON.parse(dataLines.join("\n"));
+          if (eventName === "token") {
+            onToken?.(payload.text || "");
+          } else if (eventName === "result") {
+            result = payload;
+          } else if (eventName === "error") {
+            throw new Error(payload.error || "Streaming request failed.");
+          }
+        };
+
+        while (true) {
+          const { value, done } = await reader.read();
+          buffer += done ? decoder.decode() : decoder.decode(value, { stream: true });
+
+          let boundary = buffer.indexOf("\n\n");
+          while (boundary >= 0) {
+            processFrame(buffer.slice(0, boundary));
+            buffer = buffer.slice(boundary + 2);
+            boundary = buffer.indexOf("\n\n");
+          }
+
+          if (done) {
+            if (buffer.trim()) processFrame(buffer);
+            break;
+          }
+        }
+
+        if (!result) {
+          throw new Error("The streaming response ended before a result was received.");
+        }
+        return result;
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          throw new Error("Planner request timed out. Please retry or use a shorter prompt.");
+        }
+        throw error;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    }
+
+      function splitLocationParts(displayName) {
+        const parts = String(displayName || "").split(",").map((part) => part.trim()).filter(Boolean);
+        const title = parts.slice(0, 2).join(", ") || String(displayName || "");
+        const subtitle = parts.slice(2).join(", ");
+        return { title, subtitle };
+      }
+
+      async function searchLocations(query, signal) {
+        const params = new URLSearchParams({
+          q: query,
+          format: "jsonv2",
+          addressdetails: "1",
+          limit: String(LOCATION_AUTOCOMPLETE_LIMIT)
+        });
+        const response = await fetch(`${LOCATION_AUTOCOMPLETE_URL}?${params.toString()}`, {
+          method: "GET",
+          headers: {
+            "Accept": "application/json"
+          },
+          signal
+        });
+
+        if (!response.ok) {
+          throw new Error(`Location lookup failed (${response.status})`);
+        }
+
+        const data = await response.json();
+        if (!Array.isArray(data)) return [];
+
+        return data.map((item) => {
+          const displayName = item.display_name || "";
+          const parts = splitLocationParts(displayName);
+          return {
+            id: item.place_id,
+            label: displayName,
+            shortLabel: parts.title,
+            subtitle: parts.subtitle,
+            lat: item.lat,
+            lon: item.lon
+          };
+        });
+      }
+
+      function renderRouteSuggestions(type, suggestions, errorMessage = "") {
+        const input = type === "from" ? $("heroFromLocation") : $("heroToLocation");
+        const box = type === "from" ? $("heroFromSuggestions") : $("heroToSuggestions");
+        const autoState = heroAutocompleteState[type];
+
+        autoState.suggestions = suggestions;
+        autoState.activeIndex = -1;
+        box.innerHTML = "";
+
+        if (errorMessage) {
+          box.innerHTML = `<div class="route-suggestion-empty">${safeText(errorMessage)}</div>`;
+          box.style.display = "block";
+          input.setAttribute("aria-expanded", "true");
+          return;
+        }
+
+        if (!suggestions.length) {
+          box.style.display = "none";
+          input.setAttribute("aria-expanded", "false");
+          return;
+        }
+
+        suggestions.forEach((item, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "route-suggestion";
+          button.setAttribute("role", "option");
+          button.innerHTML = `<strong>${safeText(item.shortLabel)}</strong><span>${safeText(item.subtitle || item.label)}</span>`;
+          button.addEventListener("click", () => {
+            setRouteSelection(type, item);
+            hideRouteSuggestions(type);
+          });
+          button.addEventListener("mousemove", () => {
+            autoState.activeIndex = index;
+            highlightActiveSuggestion(type);
+          });
+          box.appendChild(button);
+        });
+
+        box.style.display = "block";
+        input.setAttribute("aria-expanded", "true");
+      }
+
+      function hideRouteSuggestions(type) {
+        const input = type === "from" ? $("heroFromLocation") : $("heroToLocation");
+        const box = type === "from" ? $("heroFromSuggestions") : $("heroToSuggestions");
+        box.style.display = "none";
+        input.setAttribute("aria-expanded", "false");
+        heroAutocompleteState[type].activeIndex = -1;
+      }
+
+      function highlightActiveSuggestion(type) {
+        const box = type === "from" ? $("heroFromSuggestions") : $("heroToSuggestions");
+        Array.from(box.querySelectorAll(".route-suggestion")).forEach((item, idx) => {
+          item.classList.toggle("is-active", idx === heroAutocompleteState[type].activeIndex);
+        });
+      }
+
+      function updateRoutePicked(type) {
+        const badge = type === "from" ? $("heroFromPicked") : $("heroToPicked");
+        const selected = state.heroRoute[type];
+        if (!selected) {
+          badge.style.display = "none";
+          badge.textContent = "";
+          return;
+        }
+        badge.style.display = "inline-block";
+        badge.textContent = selected.label;
+      }
+
+      function setRouteSelection(type, item) {
+        const input = type === "from" ? $("heroFromLocation") : $("heroToLocation");
+        state.heroRoute[type] = item;
+        input.value = item.shortLabel;
+        updateRoutePicked(type);
+      }
+
+      function clearRouteSelection(type) {
+        const input = type === "from" ? $("heroFromLocation") : $("heroToLocation");
+        state.heroRoute[type] = null;
+        input.value = "";
+        updateRoutePicked(type);
+        hideRouteSuggestions(type);
+        input.focus();
+      }
+
+      function updateRouteFromText(type, text) {
+        const existing = state.heroRoute[type];
+        if (existing && existing.shortLabel !== text.trim()) {
+          state.heroRoute[type] = null;
+          updateRoutePicked(type);
+        }
+      }
+
+      function routeValue(type) {
+        const input = type === "from" ? $("heroFromLocation") : $("heroToLocation");
+        const selected = state.heroRoute[type];
+        return selected ? selected.label : input.value.trim();
+      }
+
+      function heroRouteValidationError() {
+        const fromValue = routeValue("from");
+        const toValue = routeValue("to");
+        const startDate = $("heroStartDate").value;
+        const endDate = $("heroEndDate").value;
+
+        if (!fromValue || !toValue) {
+          return "Please select both FROM and TO locations.";
+        }
+        if (fromValue.toLowerCase() === toValue.toLowerCase()) {
+          return "Departure and destination must be different.";
+        }
+        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+          return "Return date cannot be earlier than departure date.";
+        }
+        return "";
+      }
+
+      function wireHeroRouteAutocomplete(type) {
+        const input = type === "from" ? $("heroFromLocation") : $("heroToLocation");
+        const clearBtn = type === "from" ? $("heroFromClear") : $("heroToClear");
+        const autoState = heroAutocompleteState[type];
+
+        const triggerSearch = () => {
+          const query = input.value.trim();
+          updateRouteFromText(type, query);
+
+          if (query.length < 2) {
+            hideRouteSuggestions(type);
+            return;
+          }
+
+          if (autoState.timer) clearTimeout(autoState.timer);
+          autoState.timer = setTimeout(async () => {
+            if (autoState.controller) autoState.controller.abort();
+            autoState.controller = new AbortController();
+
+            try {
+              const suggestions = await searchLocations(query, autoState.controller.signal);
+              renderRouteSuggestions(type, suggestions, suggestions.length ? "" : "No locations found for this query.");
+            } catch (error) {
+              if (error.name === "AbortError") return;
+              renderRouteSuggestions(type, [], "Location service unavailable. Please type location manually.");
+            }
+          }, 250);
+        };
+
+        input.addEventListener("input", triggerSearch);
+        input.addEventListener("focus", triggerSearch);
+        input.addEventListener("keydown", (event) => {
+          const { suggestions } = autoState;
+          if (!suggestions.length) return;
+
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            autoState.activeIndex = (autoState.activeIndex + 1) % suggestions.length;
+            highlightActiveSuggestion(type);
+          } else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            autoState.activeIndex = (autoState.activeIndex - 1 + suggestions.length) % suggestions.length;
+            highlightActiveSuggestion(type);
+          } else if (event.key === "Enter" && autoState.activeIndex >= 0) {
+            event.preventDefault();
+            setRouteSelection(type, suggestions[autoState.activeIndex]);
+            hideRouteSuggestions(type);
+          } else if (event.key === "Escape") {
+            hideRouteSuggestions(type);
+          }
+        });
+
+        input.addEventListener("blur", () => {
+          setTimeout(() => hideRouteSuggestions(type), 120);
+        });
+
+        clearBtn.addEventListener("click", () => clearRouteSelection(type));
+      }
+
+      function swapHeroRoute() {
+        const swapBtn = $("heroSwapBtn");
+        swapBtn.classList.add("is-rotating");
+        setTimeout(() => swapBtn.classList.remove("is-rotating"), 300);
+
+        const fromInput = $("heroFromLocation");
+        const toInput = $("heroToLocation");
+
+        const fromText = fromInput.value;
+        const toText = toInput.value;
+        fromInput.value = toText;
+        toInput.value = fromText;
+
+        const oldFromSelection = state.heroRoute.from;
+        state.heroRoute.from = state.heroRoute.to;
+        state.heroRoute.to = oldFromSelection;
+        updateRoutePicked("from");
+        updateRoutePicked("to");
+
+        hideRouteSuggestions("from");
+        hideRouteSuggestions("to");
+      }
+
+      function initHeroRouteSearch() {
+        wireHeroRouteAutocomplete("from");
+        wireHeroRouteAutocomplete("to");
+        $("heroSwapBtn").addEventListener("click", swapHeroRoute);
+      }
+
+    function toInr(value) {
+      return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value || 0);
+    }
+
+    function renderDestinations() {
+      const search = $("destinationSearch").value.trim().toLowerCase();
+      const filter = $("destinationFilter").value;
+      const list = destinations.filter((item) => {
+        const matchesSearch = `${item.name} ${item.country} ${item.desc}`.toLowerCase().includes(search);
+        const matchesFilter = filter === "all" || item.category.includes(filter);
+        return matchesSearch && matchesFilter;
+      });
+
+      const grid = $("destinationGrid");
+      grid.innerHTML = "";
+
+      if (!list.length) {
+        grid.innerHTML = '<div class="panel" style="grid-column:1/-1">No destinations match your search and filters.</div>';
+        return;
+      }
+
+      list.forEach((item) => {
+        const isFavorite = state.favorites.has(item.id);
+        const article = document.createElement("article");
+        article.className = "dest-card";
+        article.innerHTML = `
+          <div class="dest-image-wrap">
+            <img loading="lazy" src="${item.image}" alt="${safeText(item.name)} destination photo">
+            <button class="favorite-btn ${isFavorite ? "active" : ""}" type="button" data-fav="${item.id}" aria-label="Favorite ${safeText(item.name)}"><i class="fa-${isFavorite ? "solid" : "regular"} fa-heart"></i></button>
+          </div>
+          <div class="dest-content">
+            <div><strong>${safeText(item.name)}</strong> • <span style="color:var(--muted)">${safeText(item.country)}</span></div>
+            <div>${safeText(item.desc)}</div>
+            <div class="tag-row">
+              <span class="tag">Budget: ${safeText(item.budget)}</span>
+              <span class="tag">Best Time: ${safeText(item.bestTime)}</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn btn-primary" type="button" data-explore="${item.id}">Explore</button>
+            </div>
+          </div>
+        `;
+        article.querySelector("img").addEventListener("error", (e) => {
+          if (e.target.src !== IMAGE_FALLBACK) {
+            e.target.src = IMAGE_FALLBACK;
+          }
+        });
+        grid.appendChild(article);
+      });
+    }
+
+    function toggleFavorite(id) {
+      if (state.favorites.has(id)) {
+        state.favorites.delete(id);
+      } else {
+        state.favorites.add(id);
+      }
+      localStorage.setItem("favorite_destinations", JSON.stringify(Array.from(state.favorites)));
+      renderDestinations();
+      showToast("Favorites updated.");
+    }
+
+    function destinationToPlanner(id) {
+      const match = destinations.find((item) => item.id === id);
+      if (!match) return;
+      $("toCity").value = `${match.name}, ${match.country}`;
+      window.location.hash = "#planner";
+      showToast(`Selected ${match.name} for planning.`);
+    }
+
+    function initGallery() {
+      const gallery = $("galleryGrid");
+      gallery.innerHTML = "";
+      galleryItems.forEach((item, index) => {
+        const cell = document.createElement("button");
+        cell.type = "button";
+        cell.className = "gallery-item";
+        cell.innerHTML = `<img loading="lazy" src="${item.src}" alt="${safeText(item.caption)}"><span class="gallery-caption">${safeText(item.caption)}</span>`;
+        const image = cell.querySelector("img");
+        image.addEventListener("error", () => {
+          if (image.src !== IMAGE_FALLBACK) image.src = IMAGE_FALLBACK;
+        });
+        cell.addEventListener("click", () => openLightbox(index));
+        gallery.appendChild(cell);
+      });
+    }
+
+    function openLightbox(index) {
+      state.lightboxIndex = index;
+      updateLightbox();
+      $("lightbox").style.display = "flex";
+    }
+
+    function closeLightbox() {
+      $("lightbox").style.display = "none";
+    }
+
+    function updateLightbox() {
+      const item = galleryItems[state.lightboxIndex];
+      $("lightboxImage").src = item.src;
+      $("lightboxImage").alt = item.caption;
+    }
+
+    function moveLightbox(step) {
+      const next = (state.lightboxIndex + step + galleryItems.length) % galleryItems.length;
+      state.lightboxIndex = next;
+      updateLightbox();
+    }
+
+    function initBudgetCalculator() {
+      const grid = $("calculatorGrid");
+      const chart = $("budgetChart");
+
+      budgetCategories.forEach((name) => {
+        const id = `budget_${name.toLowerCase()}`;
+        const wrap = document.createElement("div");
+        wrap.className = "field";
+        wrap.innerHTML = `<label for="${id}">${name}</label><input id="${id}" type="text" inputmode="decimal" value="0" placeholder="e.g. 10,000">`;
+        grid.appendChild(wrap);
+      });
+
+      budgetCategories.forEach((name) => {
+        const row = document.createElement("div");
+        row.className = "bar-row";
+        row.dataset.category = name;
+        row.innerHTML = `<span>${name}</span><div class="bar-track"><div class="bar-fill"></div></div><strong>0%</strong>`;
+        chart.appendChild(row);
+      });
+
+      const handleBudgetEdit = () => {
+        $("budgetPlanStatus").textContent = "Calculator updated from the editable amounts. Enter a range to calculate low and high totals.";
+        computeBudget();
+      };
+      grid.addEventListener("input", handleBudgetEdit);
+      grid.addEventListener("change", handleBudgetEdit);
+      $("budgetTravelers").addEventListener("input", computeBudget);
+      $("budgetTravelers").addEventListener("change", computeBudget);
+      computeBudget();
+    }
+
+    function parseInrAmount(amount, unit) {
+      const parsed = Number(String(amount || "").replace(/[,\s]/g, ""));
+      if (!Number.isFinite(parsed)) return 0;
+
+      const normalizedUnit = String(unit || "").toLowerCase();
+      const multiplier = /^(?:k|thousands?)$/.test(normalizedUnit) ? 1000
+        : /^(?:l|lakhs?)$/.test(normalizedUnit) ? 100000
+          : /^(?:m|millions?)$/.test(normalizedUnit) ? 1000000
+            : /^(?:cr|crores?)$/.test(normalizedUnit) ? 10000000
+              : 1;
+      return Math.max(0, parsed * multiplier);
+    }
+
+    function parseBudgetEstimate(value) {
+      const text = String(value || "").replace(/[\u00a0\u202f]/g, " ");
+      const amountPattern = "(\\d[\\d, ]*(?:\\.\\d+)?)\\s*(crores?|cr|lakhs?|l|millions?|m|thousands?|k)?";
+      const rangePattern = new RegExp(
+        `${amountPattern}\\s*(?:-|–|—|\\bto\\b)\\s*(?:₹|INR|Rs\\.?)?\\s*${amountPattern}`,
+        "i"
+      );
+      const range = rangePattern.exec(text);
+
+      if (range) {
+        const firstUnit = range[2] || range[4] || "";
+        const secondUnit = range[4] || range[2] || "";
+        const first = parseInrAmount(range[1], firstUnit);
+        const second = parseInrAmount(range[3], secondUnit);
+        return {
+          low: Math.min(first, second),
+          high: Math.max(first, second)
+        };
+      }
+
+      const single = new RegExp(amountPattern, "i").exec(text);
+      if (!single) return { low: 0, high: 0 };
+
+      const amount = parseInrAmount(single[1], single[2]);
+      return { low: amount, high: amount };
+    }
+
+    function budgetCategoryFromLabel(value) {
+      const label = String(value || "").replace(/\*\*|`/g, "").trim().toLowerCase();
+      if (/^(?:miscellaneous|misc|other)\b/.test(label)) return "Miscellaneous";
+      if (/\bflight|airfare|air ticket/.test(label)) return "Flights";
+      if (/\bhotel|accommodation|lodging|stay|resort|hostel/.test(label)) return "Hotels";
+      if (/\bfood|meal|dining|drink|restaurant/.test(label)) return "Food";
+      if (/\btransport|taxi|cab|driver|transfer|train|bus|metro/.test(label)) return "Transportation";
+      if (/\bactivit|tour|entry fee|experience|sightseeing|cruise|water sport|spa/.test(label)) return "Activities";
+      if (/\bshopping|souvenir/.test(label)) return "Shopping";
+      if (/\bmiscellaneous|misc|insurance|tips?|visa|other/.test(label)) return "Miscellaneous";
+      return null;
+    }
+
+    function extractBudgetEstimates(text) {
+      const estimates = {};
+      String(text || "").split(/\r?\n/).forEach((line) => {
+        const trimmed = line.trim();
+        if (!trimmed.includes("|")) return;
+
+        const cells = trimmed.replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+        if (cells.length < 2) return;
+
+        const category = budgetCategoryFromLabel(cells[0]);
+        if (!category) return;
+
+        const estimate = parseBudgetEstimate(cells[1]);
+        if (estimate.high <= 0) return;
+
+        if (!estimates[category]) {
+          estimates[category] = estimate;
+        }
+      });
+      return estimates;
+    }
+
+    function formatBudgetRange(low, high) {
+      if (Math.round(low) === Math.round(high)) return toInr((low + high) / 2);
+      return `${toInr(low)} – ${toInr(high)}`;
+    }
+
+    function parseTravelerCount(value, fallbackText) {
+      const count = Number(value);
+      if (Number.isFinite(count) && count >= 1) return Math.floor(count);
+
+      const match = String(fallbackText || "").match(/\b(\d+)\s*(?:travelers?|travellers?|people|persons|adults|guests)\b/i);
+      if (match) return Math.max(1, Number(match[1]));
+      return Math.max(1, Number($("budgetTravelers").value) || 1);
+    }
+
+    function syncBudgetFromPlan(data, travelerCount, fallbackText = "") {
+      const sources = [data && data.budget_results, data && data.itinerary, data && data.answer];
+      let estimates = {};
+      for (const source of sources) {
+        estimates = extractBudgetEstimates(source);
+        if (Object.keys(estimates).length) break;
+      }
+
+      if (!Object.keys(estimates).length) {
+        $("budgetPlanStatus").textContent = "No itemized INR estimates were found in this plan. Enter amounts manually to calculate the budget.";
+        return false;
+      }
+
+      $("budgetTravelers").value = String(parseTravelerCount(travelerCount, fallbackText));
+      budgetCategories.forEach((name) => {
+        const estimate = estimates[name];
+        $(`budget_${name.toLowerCase()}`).value = estimate
+          ? formatBudgetRange(estimate.low, estimate.high)
+          : "0";
+      });
+
+      $("budgetPlanStatus").textContent = "Loaded itemized costs from the generated plan. Range totals show low–high estimates; the chart uses category midpoints. Edit any amount to adjust.";
+      computeBudget();
+      return true;
+    }
+
+    function computeBudget() {
+      let totalLow = 0;
+      let totalHigh = 0;
+      let totalMidpoint = 0;
+      const values = {};
+      budgetCategories.forEach((name) => {
+        const id = `budget_${name.toLowerCase()}`;
+        const estimate = parseBudgetEstimate($(id).value);
+        const midpoint = (estimate.low + estimate.high) / 2;
+        values[name] = midpoint;
+        totalLow += estimate.low;
+        totalHigh += estimate.high;
+        totalMidpoint += midpoint;
+      });
+      const travelers = Math.max(1, Number($("budgetTravelers").value) || 1);
+
+      $("budgetTotal").textContent = formatBudgetRange(totalLow, totalHigh);
+      $("budgetPerPerson").textContent = formatBudgetRange(totalLow / travelers, totalHigh / travelers);
+
+      document.querySelectorAll(".bar-row").forEach((row) => {
+        const name = row.dataset.category;
+        const value = values[name];
+        const pct = totalMidpoint ? Math.round((value / totalMidpoint) * 100) : 0;
+        row.querySelector(".bar-fill").style.width = `${pct}%`;
+        row.querySelector("strong").textContent = `${pct}%`;
+      });
+    }
+
+    function buildPlannerMessage(form) {
+      return [
+        `Plan a ${form.days}-day trip from ${form.from} to ${form.to}.`,
+        `Travel dates: ${form.startDate} to ${form.endDate}.`,
+        `Travelers: ${form.travelers}.`,
+        `Budget range: ${form.budget}.`,
+        `Travel style: ${form.style}.`,
+        `Accommodation: ${form.accommodation}.`,
+        `Transport preference: ${form.transport}.`,
+        `Interests: ${form.interests || "general sightseeing and local food"}.`,
+        "Include flights, hotels, weather advice, day-wise plan, estimated expenses, and practical recommendations."
+      ].join(" ");
+    }
+
+    function validatePlannerForm(values) {
+      if (!values.from || !values.to || !values.startDate || !values.endDate || !values.budget) {
+        return "Please fill required fields: from, destination, dates, and budget.";
+      }
+      if (new Date(values.endDate) < new Date(values.startDate)) {
+        return "End date cannot be earlier than start date.";
+      }
+      if (values.days < 1) {
+        return "Number of days must be at least 1.";
+      }
+      return "";
+    }
+
+    function plannerValues() {
+      return {
+        from: $("fromCity").value.trim(),
+        to: $("toCity").value.trim(),
+        startDate: $("startDate").value,
+        endDate: $("endDate").value,
+        days: Number($("days").value || 0),
+        travelers: Number($("travelers").value || 1),
+        budget: $("budgetRange").value.trim(),
+        style: $("travelStyle").value,
+        accommodation: $("accommodation").value,
+        transport: $("transport").value,
+        interests: $("interests").value.trim()
+      };
+    }
+
+    function setPlannerLoading(loading) {
+      $("plannerSubmit").disabled = loading;
+      $("plannerSkeleton").style.display = loading ? "block" : "none";
+      $("plannerStatus").textContent = loading ? "Generating draft itinerary..." : $("plannerStatus").textContent;
+    }
+
+    function renderWorkflow(data) {
+      const list = $("workflowList");
+      list.innerHTML = "";
+      (data.selected_agents || []).forEach((agent) => {
+        const chip = document.createElement("span");
+        chip.className = "workflow-chip";
+        chip.textContent = agent.replace(/_/g, " ");
+        list.appendChild(chip);
+      });
+    }
+
+    function splitIntoSections(text) {
+      const content = String(text || "").trim();
+      if (!content) return [];
+      const lines = content.split(/\r?\n/);
+      const sections = [];
+      let current = { title: "Overview", body: "" };
+      lines.forEach((line) => {
+        const headingMatch = line.match(/^\s{0,3}#{1,3}\s+(.+?)\s*#*\s*$/);
+        const dayMatch = line.match(/^\s*(day\s*\d+[^:]*)[:\-–—]?/i);
+        if (headingMatch || dayMatch) {
+          if (current.body.trim()) sections.push(current);
+          const title = (headingMatch ? headingMatch[1] : dayMatch[1])
+            .replace(/\*\*/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+          current = {
+            title,
+            body: dayMatch && !headingMatch
+              ? line.replace(dayMatch[0], "").trim() + "\n"
+              : ""
+          };
+        } else {
+          current.body += line + "\n";
+        }
+      });
+      if (current.body.trim()) sections.push(current);
+      if (sections.length === 1 && sections[0].title === "Overview") {
+        return [{ title: "Suggested Plan", body: sections[0].body }];
+      }
+      return sections;
+    }
+
+    function renderInlineMarkdown(value) {
+      return safeText(value)
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/__(.+?)__/g, "<strong>$1</strong>")
+        .replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>");
+    }
+
+    function markdownTableCells(line) {
+      return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+    }
+
+    function isMarkdownTableRow(line) {
+      return line.includes("|");
+    }
+
+    function isMarkdownTableSeparator(line) {
+      const cells = markdownTableCells(line);
+      return isMarkdownTableRow(line) && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
+    }
+
+    function renderMarkdownBody(text) {
+      const lines = String(text || "").split(/\r?\n/);
+      const blocks = [];
+      let paragraph = [];
+      let listType = "";
+      let listItems = [];
+
+      const flushParagraph = () => {
+        if (paragraph.length) {
+          blocks.push(`<p>${paragraph.map(renderInlineMarkdown).join("<br>")}</p>`);
+          paragraph = [];
+        }
+      };
+      const flushList = () => {
+        if (listItems.length) {
+          blocks.push(`<${listType}>${listItems.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join("")}</${listType}>`);
+          listItems = [];
+          listType = "";
+        }
+      };
+
+      for (let index = 0; index < lines.length; index += 1) {
+        const line = lines[index];
+        const nextLine = lines[index + 1] || "";
+        const headingMatch = line.match(/^\s{0,3}#{1,4}\s+(.+)$/);
+        const listMatch = line.match(/^\s*([-*]|\d+[.)])\s+(.+)$/);
+
+        if (isMarkdownTableRow(line) && isMarkdownTableSeparator(nextLine)) {
+          flushParagraph();
+          flushList();
+          const headers = markdownTableCells(line);
+          const rows = [];
+          index += 2;
+          while (index < lines.length && isMarkdownTableRow(lines[index])) {
+            rows.push(markdownTableCells(lines[index]));
+            index += 1;
+          }
+          index -= 1;
+          const headerHtml = headers.map((cell) => `<th>${renderInlineMarkdown(cell)}</th>`).join("");
+          const rowsHtml = rows.map((row) => {
+            const cells = headers.map((_, cellIndex) => `<td>${renderInlineMarkdown(row[cellIndex] || "")}</td>`).join("");
+            return `<tr>${cells}</tr>`;
+          }).join("");
+          blocks.push(`<div class="itinerary-table-wrap"><table class="itinerary-table"><thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table></div>`);
+          continue;
+        }
+
+        if (headingMatch) {
+          flushParagraph();
+          flushList();
+          const level = Math.min(headingMatch[0].match(/^#+/)[0].length + 1, 4);
+          blocks.push(`<h${level}>${renderInlineMarkdown(headingMatch[1])}</h${level}>`);
+          continue;
+        }
+
+        if (listMatch) {
+          flushParagraph();
+          const nextListType = /^\d/.test(listMatch[1]) ? "ol" : "ul";
+          if (listType && listType !== nextListType) flushList();
+          listType = nextListType;
+          listItems.push(listMatch[2]);
+          continue;
+        }
+
+        flushList();
+        if (!line.trim()) {
+          flushParagraph();
+        } else {
+          paragraph.push(line.trim());
+        }
+      }
+
+      flushParagraph();
+      flushList();
+      return blocks.join("");
+    }
+
+    function renderItinerary(text, threadId, isDraft) {
+      const sections = splitIntoSections(text);
+      const timeline = $("itineraryTimeline");
+      timeline.innerHTML = "";
+      $("itineraryMeta").textContent = `${isDraft ? "Draft" : "Final"} itinerary • Thread ID: ${threadId || "-"}`;
+      state.latestItineraryText = String(text || "");
+      state.latestItineraryThreadId = threadId || null;
+      state.latestItineraryIsDraft = Boolean(isDraft);
+      $("downloadPdfBtn").disabled = !state.latestItineraryText.trim();
+
+      if (!sections.length) {
+        timeline.innerHTML = '<div class="panel">No itinerary text found in response.</div>';
+        return;
+      }
+
+      sections.forEach((section, index) => {
+        const details = document.createElement("details");
+        details.className = "timeline-item";
+        details.open = index === 0;
+        details.innerHTML = `
+          <summary class="timeline-summary">${safeText(section.title || `Section ${index + 1}`)} <i class="fa-solid fa-chevron-down"></i></summary>
+          <div class="timeline-body">${renderMarkdownBody(section.body)}</div>
+        `;
+        timeline.appendChild(details);
+      });
+    }
+
+    function downloadItineraryPdf() {
+      const rawText = state.latestItineraryText.trim();
+      if (!rawText) {
+        showToast("Generate an itinerary first, then download PDF.", true);
+        return;
+      }
+
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        showToast("PDF library not loaded. Please refresh and try again.", true);
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const marginX = 44;
+      const marginTop = 52;
+      const lineHeight = 16;
+
+      const title = state.latestItineraryIsDraft
+        ? "Draft Travel Itinerary"
+        : "Final Travel Itinerary";
+      const threadLine = `Thread ID: ${state.latestItineraryThreadId || "N/A"}`;
+      const generatedAt = `Generated: ${new Date().toLocaleString()}`;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text(title, marginX, marginTop);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(threadLine, marginX, marginTop + 20);
+      doc.text(generatedAt, marginX, marginTop + 34);
+
+      const bodyLines = doc.splitTextToSize(rawText, pageWidth - marginX * 2);
+      let y = marginTop + 58;
+
+      doc.setFontSize(11);
+      bodyLines.forEach((line) => {
+        if (y > pageHeight - 40) {
+          doc.addPage();
+          y = 50;
+        }
+        doc.text(line, marginX, y);
+        y += lineHeight;
+      });
+
+      const safeThread = (state.latestItineraryThreadId || "trip").replace(/[^a-zA-Z0-9_-]/g, "_");
+      const fileName = `travel-itinerary-${safeThread}.pdf`;
+      doc.save(fileName);
+      showToast("PDF downloaded successfully.");
+    }
+
+    async function callTravelAPI(message, threadId, onToken) {
+      return postStreamingRequest(
+        `${API_BASE_URL}/api/travel/stream`,
+        { message, thread_id: threadId || null },
+        onToken
+      );
+    }
+
+    async function callApprovalAPI(threadId, approved, feedback, onToken) {
+      return postStreamingRequest(
+        `${API_BASE_URL}/api/travel/approve/stream`,
+        { thread_id: threadId, approved, feedback },
+        onToken
+      );
+    }
+
+    async function submitPlanner(event) {
+      event.preventDefault();
+      const values = plannerValues();
+      const validationError = validatePlannerForm(values);
+      if (validationError) {
+        showToast(validationError, true);
+        return;
+      }
+
+      const prompt = buildPlannerMessage(values);
+      setPlannerLoading(true);
+      $("approvalArea").style.display = "none";
+
+      try {
+        let streamedText = "";
+        let lastRender = 0;
+        const data = await callTravelAPI(
+          prompt,
+          state.currentThreadId,
+          (token) => {
+            streamedText += token;
+            const now = performance.now();
+            if (now - lastRender >= 250) {
+              renderItinerary(streamedText, state.currentThreadId, true);
+              lastRender = now;
+            }
+          }
+        );
+        state.currentThreadId = data.thread_id;
+        localStorage.setItem("planner_thread_id", data.thread_id);
+        state.pendingApproval = Boolean(data.requires_approval);
+
+        $("plannerStatus").textContent = data.guardrail_allowed === false
+          ? (data.guardrail_reason || "Request blocked by guardrail.")
+          : (data.supervisor_reasoning || "Draft generated successfully.");
+
+        renderWorkflow(data);
+        renderItinerary(data.itinerary || data.answer || "", data.thread_id, data.requires_approval);
+        syncBudgetFromPlan(data, values.travelers);
+
+        if (data.requires_approval) {
+          $("approvalArea").style.display = "flex";
+          showToast("Draft generated. Please approve or request revision.");
+        } else {
+          showToast("Final itinerary generated.");
+        }
+      } catch (error) {
+        $("plannerStatus").textContent = error.message;
+        showToast(error.message, true);
+      } finally {
+        setPlannerLoading(false);
+      }
+    }
+
+    async function submitApproval(approved) {
+      if (!state.currentThreadId || !state.pendingApproval) {
+        showToast("No draft pending approval.", true);
+        return;
+      }
+
+      const feedback = $("approvalFeedback").value.trim();
+      if (!approved && !feedback) {
+        showToast("Please provide revision feedback before requesting changes.", true);
+        return;
+      }
+
+      try {
+        setPlannerLoading(true);
+        let streamedText = "";
+        let lastRender = 0;
+        const data = await callApprovalAPI(
+          state.currentThreadId,
+          approved,
+          feedback,
+          (token) => {
+            streamedText += token;
+            const now = performance.now();
+            if (now - lastRender >= 250) {
+              renderItinerary(streamedText, state.currentThreadId, false);
+              lastRender = now;
+            }
+          }
+        );
+
+        state.pendingApproval = Boolean(data.requires_approval);
+        renderWorkflow(data);
+        renderItinerary(data.answer || data.itinerary || "", data.thread_id, false);
+        syncBudgetFromPlan(data, $("budgetTravelers").value);
+        $("plannerStatus").textContent = approved ? "Final itinerary approved and generated." : "Revision generated from feedback.";
+        $("approvalArea").style.display = state.pendingApproval ? "flex" : "none";
+        if (!state.pendingApproval) $("approvalFeedback").value = "";
+        showToast(approved ? "Final itinerary ready." : "Revision completed.");
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setPlannerLoading(false);
+      }
+    }
+
+    function fillPlannerFromHero() {
+      window.location.hash = "#planner";
+      const fromInput = $("fromCity");
+      if (fromInput) {
+        fromInput.focus();
+      }
+      showToast("Use the AI Trip Planner form below to enter all details.");
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("theme", theme);
+      $("themeBtn").innerHTML = theme === "dark" ? '<i class="fa-regular fa-sun"></i>' : '<i class="fa-regular fa-moon"></i>';
+    }
+
+    function toggleTheme() {
+      const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      applyTheme(next);
+    }
+
+    function setupChat() {
+      $("chatMessages").innerHTML = "";
+      appendChatMessage("ai", "Hi! I can send your travel question to the planner backend and return the generated response.");
+      const wrap = $("chatSuggestions");
+      wrap.innerHTML = "";
+      chatPrompts.forEach((prompt) => {
+        const btn = document.createElement("button");
+        btn.className = "chat-suggestion";
+        btn.textContent = prompt;
+        btn.type = "button";
+        btn.addEventListener("click", () => {
+          $("chatInput").value = prompt;
+          sendChatMessage();
+        });
+        wrap.appendChild(btn);
+      });
+    }
+
+    function appendChatMessage(role, text) {
+      const bubble = document.createElement("div");
+      bubble.className = `chat-msg ${role}`;
+      bubble.textContent = text;
+      $("chatMessages").appendChild(bubble);
+      $("chatMessages").scrollTop = $("chatMessages").scrollHeight;
+      return bubble;
+    }
+
+    async function sendChatMessage() {
+      const input = $("chatInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendChatMessage("user", text);
+      input.value = "";
+      $("typingIndicator").style.display = "block";
+      const responseBubble = appendChatMessage("ai", "");
+
+      try {
+        const data = await callTravelAPI(
+          text,
+          state.chatThreadId,
+          (token) => {
+            responseBubble.textContent += token;
+            $("chatMessages").scrollTop = $("chatMessages").scrollHeight;
+          }
+        );
+        state.chatThreadId = data.thread_id;
+        localStorage.setItem("chat_thread_id", data.thread_id);
+        syncBudgetFromPlan(data, null, text);
+        if (data.requires_approval) {
+          responseBubble.textContent = data.answer || data.itinerary
+            || "Draft itinerary generated and waiting for approval.";
+          renderItinerary(data.itinerary || data.answer || "", data.thread_id, true);
+          $("approvalArea").style.display = "flex";
+          state.currentThreadId = data.thread_id;
+          state.pendingApproval = true;
+          localStorage.setItem("planner_thread_id", data.thread_id);
+        } else {
+          responseBubble.textContent = data.answer || "No response text returned by API.";
+        }
+      } catch (error) {
+        responseBubble.textContent = `Backend unavailable: ${error.message}\nDemo mode: no fabricated AI response is shown.`;
+      } finally {
+        $("typingIndicator").style.display = "none";
+      }
+    }
+
+    async function checkHealth() {
+      try {
+        const res = await fetchWithTimeout(`${API_BASE_URL}/health`, { method: "GET" }, 10000);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error("Health check failed");
+        $("healthStatus").textContent = `${data.status || "ok"} (${data.message || "backend online"})`;
+        $("healthStatus").style.color = "var(--success)";
+      } catch {
+        $("healthStatus").textContent = "Unavailable";
+        $("healthStatus").style.color = "var(--danger)";
+      }
+    }
+
+    function handleNavActiveStates() {
+      const links = Array.from(document.querySelectorAll(".nav-link"));
+      const sections = links.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          links.forEach((link) => {
+            link.classList.toggle("active", link.getAttribute("href") === `#${entry.target.id}`);
+          });
+        });
+      }, { rootMargin: "-40% 0px -45% 0px", threshold: 0.01 });
+      sections.forEach((section) => observer.observe(section));
+    }
+
+    function initEvents() {
+      $("mobileMenuBtn").addEventListener("click", () => $("navLinks").classList.toggle("open"));
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener("click", () => $("navLinks").classList.remove("open"));
+      });
+
+      $("destinationSearch").addEventListener("input", renderDestinations);
+      $("destinationFilter").addEventListener("change", renderDestinations);
+      $("destinationGrid").addEventListener("click", (event) => {
+        const favBtn = event.target.closest("[data-fav]");
+        if (favBtn) {
+          toggleFavorite(favBtn.dataset.fav);
+          return;
+        }
+        const exploreBtn = event.target.closest("[data-explore]");
+        if (exploreBtn) destinationToPlanner(exploreBtn.dataset.explore);
+      });
+
+      $("heroPlanBtn").addEventListener("click", fillPlannerFromHero);
+      $("plannerForm").addEventListener("submit", submitPlanner);
+      $("approveBtn").addEventListener("click", () => submitApproval(true));
+      $("reviseBtn").addEventListener("click", () => submitApproval(false));
+      $("downloadPdfBtn").addEventListener("click", downloadItineraryPdf);
+      $("themeBtn").addEventListener("click", toggleTheme);
+      $("profileBtn").addEventListener("click", () => showToast("Profile module can be connected to your auth provider."));
+
+      $("chatFab").addEventListener("click", () => {
+        const open = $("chatPanel").style.display === "block";
+        $("chatPanel").style.display = open ? "none" : "block";
+      });
+      $("closeChatBtn").addEventListener("click", () => $("chatPanel").style.display = "none");
+      $("clearChatBtn").addEventListener("click", () => { setupChat(); showToast("Chat cleared."); });
+      $("chatSendBtn").addEventListener("click", sendChatMessage);
+      $("chatInput").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          sendChatMessage();
+        }
+      });
+
+      $("lbClose").addEventListener("click", closeLightbox);
+      $("lbPrev").addEventListener("click", () => moveLightbox(-1));
+      $("lbNext").addEventListener("click", () => moveLightbox(1));
+      $("lightbox").addEventListener("click", (event) => {
+        if (event.target.id === "lightbox") closeLightbox();
+      });
+      document.addEventListener("keydown", (event) => {
+        if ($("lightbox").style.display === "flex") {
+          if (event.key === "Escape") closeLightbox();
+          if (event.key === "ArrowLeft") moveLightbox(-1);
+          if (event.key === "ArrowRight") moveLightbox(1);
+        }
+      });
+
+      window.addEventListener("scroll", () => {
+        $("backToTop").style.display = window.scrollY > 480 ? "grid" : "none";
+      });
+      $("backToTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+
+      $("startDate").addEventListener("change", autoComputeDays);
+      $("endDate").addEventListener("change", autoComputeDays);
+    }
+
+    function autoComputeDays() {
+      const start = $("startDate").value;
+      const end = $("endDate").value;
+      if (!start || !end) return;
+      const diff = Math.ceil((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)) + 1;
+      if (diff > 0) $("days").value = diff;
+    }
+
+    function initializeTheme() {
+      const stored = localStorage.getItem("theme");
+      applyTheme(stored === "dark" ? "dark" : "light");
+    }
+
+    function initialize() {
+      initializeTheme();
+      renderDestinations();
+      initGallery();
+      initBudgetCalculator();
+      setupChat();
+      initEvents();
+      handleNavActiveStates();
+      checkHealth();
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
